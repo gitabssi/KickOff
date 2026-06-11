@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KickOff Agent — World Cup 2026 Fan Logistics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <div id="hud">
+      <header id="topbar">
+        <div class="brand">
+          <span class="brand-kick">KICK</span><span class="brand-off">OFF</span>
+          <span class="brand-sub">WORLD CUP 2026 · METLIFE STADIUM</span>
+        </div>
+        <div id="matchclock">
+          <div class="clock-label" id="phase-chip">PRE-MATCH</div>
+          <div class="clock-time" id="clock">T−180:00</div>
+        </div>
+        <div id="odometer">
+          <div class="odo-value" id="fans-delivered">0</div>
+          <div class="odo-label">fans in stadium · of <span id="fans-total">82,500</span></div>
+        </div>
+      </header>
+
+      <aside id="corridors-panel"></aside>
+
+      <aside id="right-panel">
+        <div id="alerts"></div>
+        <div id="feed-wrap">
+          <div class="panel-title">AGENT OPERATIONS FEED</div>
+          <div id="feed"></div>
+        </div>
+      </aside>
+
+      <div id="launch-wrap">
+        <button id="launch-btn">
+          <span class="btn-ring"></span>
+          <span class="btn-label">LAUNCH SIMULATION</span>
+          <span class="btn-sub">82,500 fans · 4 corridors · 5 agents · live on MongoDB Atlas</span>
+        </button>
+      </div>
+
+      <div id="banner"></div>
+
+      <footer id="mongo-bar">
+        <div class="mongo-brand">
+          <span class="mongo-leaf">⬢</span> MongoDB Atlas
+          <span class="mongo-live" id="mongo-live">● LIVE</span>
+        </div>
+        <div id="mongo-ticker"></div>
+        <div id="mongo-counters"></div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
