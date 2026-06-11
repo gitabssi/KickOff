@@ -92,7 +92,7 @@ async def _dispatch_cloud(name: str, message: str) -> str:
 
     creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
     creds.refresh(google.auth.transport.requests.Request())
-    location = config.optional("GOOGLE_CLOUD_LOCATION", "us-central1")
+    location = config.optional("KICKOFF_REGION", "us-central1")
     url = f"https://{location}-aiplatform.googleapis.com/v1/{resource}:streamQuery?alt=sse"
 
     final_text = ""

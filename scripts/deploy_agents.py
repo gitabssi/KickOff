@@ -52,6 +52,9 @@ def common_env(mcp_url: str) -> dict:
         "MCP_SERVER_URL": mcp_url,
         "KICKOFF_AGENT_MODE": "cloud",
         "GOOGLE_GENAI_USE_VERTEXAI": "TRUE",
+        # Gemini 3 preview models are global; the engine itself is regional.
+        "GOOGLE_CLOUD_LOCATION": "global",
+        "KICKOFF_REGION": config.optional("KICKOFF_REGION", "us-central1"),
     }
 
 
@@ -92,7 +95,7 @@ def deploy_one(name: str, project: str, region: str, staging_bucket: str, env: d
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=config.optional("GOOGLE_CLOUD_PROJECT"))
-    parser.add_argument("--region", default=config.optional("GOOGLE_CLOUD_LOCATION", "us-central1"))
+    parser.add_argument("--region", default=config.optional("KICKOFF_REGION", "us-central1"))
     parser.add_argument("--only", help="Deploy a single agent by name")
     args = parser.parse_args()
 
