@@ -7,13 +7,6 @@
  */
 import "./style.css";
 import {
-  initScene,
-  sceneCorridorUpdate,
-  sceneSetDelivered,
-  sceneKickoff,
-  sceneReset,
-} from "./scene";
-import {
   buildCorridorCards,
   updateCorridorCard,
   addDecision,
@@ -32,13 +25,33 @@ let fansTotal = 82500;
 let kickoffShown = false;
 let eventSource: EventSource | null = null;
 
+// Scene implementation: photorealistic 3D Google Maps when a Maps API key
+// is configured, Three.js stylized fallback otherwise. Same interface.
+let sceneCorridorUpdate: (doc: any) => void;
+let sceneSetDelivered: (f: number) => void;
+let sceneKickoff: () => void;
+let sceneReset: () => void;
+
+async function initSceneImpl(cfg: any) {
+  if (cfg.maps_api_key) {
+    const m = await import("./scene3dmaps");
+    await m.initScene(cfg.corridors, cfg.maps_api_key);
+    (document.getElementById("scene") as HTMLCanvasElement).style.display = "none";
+    ({ sceneCorridorUpdate, sceneSetDelivered, sceneKickoff, sceneReset } = m);
+  } else {
+    const m = await import("./scene");
+    m.initScene(document.getElementById("scene") as HTMLCanvasElement, cfg.corridors);
+    ({ sceneCorridorUpdate, sceneSetDelivered, sceneKickoff, sceneReset } = m);
+  }
+}
+
 async function boot() {
   const cfg = await (await fetch("/api/config")).json();
   fansTotal = cfg.fans_total;
   document.getElementById("fans-total")!.textContent = fansTotal.toLocaleString("en-US");
   for (const c of cfg.corridors) corridorColors[c.corridor_id] = c.color;
 
-  initScene(document.getElementById("scene") as HTMLCanvasElement, cfg.corridors);
+  await initSceneImpl(cfg);
   buildCorridorCards(cfg.corridors);
   animateOdometer();
 

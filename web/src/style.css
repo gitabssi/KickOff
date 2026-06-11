@@ -22,6 +22,14 @@ body {
 }
 
 #scene { position: fixed; inset: 0; display: block; }
+#map3d { position: fixed; inset: 0; }
+#vignette {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(4, 7, 12, 0.55) 100%),
+    linear-gradient(180deg, rgba(4, 7, 12, 0.5), transparent 18%, transparent 80%, rgba(4, 7, 12, 0.6));
+}
+#hud { z-index: 2; }
 
 #hud {
   position: fixed; inset: 0;

@@ -189,6 +189,9 @@ async def get_config():
         "tick_minutes": TICK_MINUTES,
         "agent_mode": config.AGENT_MODE,
         "autopilot": config.AUTOPILOT,
+        # Key is restricted to Map Tiles + Maps JS APIs; exposing it to the
+        # browser is how Maps keys work. Empty string = Three.js fallback.
+        "maps_api_key": config.optional("MAPS_API_KEY"),
     }
 
 
