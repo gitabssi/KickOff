@@ -23,10 +23,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY pyproject.toml README.md LICENSE ./
+COPY pyproject.toml uv.lock README.md LICENSE ./
+# Install the exact locked dependency set — a fresh resolve here once pulled
+# in a google-adk whose MCP schema validation broke against the MongoDB MCP
+# server's tool schemas.
+RUN pip install --no-cache-dir uv \
+    && uv export --frozen --no-dev --no-hashes --no-emit-project -o /tmp/requirements.txt \
+    && pip install --no-cache-dir -r /tmp/requirements.txt
 COPY agents/ agents/
 COPY gateway/ gateway/
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir --no-deps .
 
 COPY --from=webbuild /app/gateway/static gateway/static
 
