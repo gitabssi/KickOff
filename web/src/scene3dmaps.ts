@@ -189,8 +189,10 @@ export async function initScene(specs: CorridorSpec[], apiKey: string) {
     const pulses: any[] = [];
     const pulseOffsets = [0, 0.5];
     for (const off of pulseOffsets) {
+      // The alpha maps3d API rejects empty coordinate lists — seed each
+      // pulse with an invisible 2-point segment; the frame loop replaces it.
       const pulse = new Polyline3DElement({
-        coordinates: [],
+        coordinates: dense.slice(0, 2).map((p) => ({ ...p, altitude: 78 })),
         strokeColor: hexToRgba(spec.color, 0.0),
         strokeWidth: 16,
         altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,

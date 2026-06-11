@@ -27,25 +27,36 @@ let eventSource: EventSource | null = null;
 
 // Scene implementation: photorealistic 3D Google Maps when a Maps API key
 // is configured, Three.js stylized fallback otherwise. Same interface.
-let sceneCorridorUpdate: (doc: any) => void;
-let sceneSetDelivered: (f: number) => void;
-let sceneKickoff: () => void;
-let sceneReset: () => void;
+let sceneCorridorUpdate: ((doc: any) => void) | undefined;
+let sceneSetDelivered: ((f: number) => void) | undefined;
+let sceneKickoff: (() => void) | undefined;
+let sceneReset: (() => void) | undefined;
 
 async function initSceneImpl(cfg: any) {
   if (cfg.maps_api_key) {
-    const m = await import("./scene3dmaps");
-    await m.initScene(cfg.corridors, cfg.maps_api_key);
-    (document.getElementById("scene") as HTMLCanvasElement).style.display = "none";
-    ({ sceneCorridorUpdate, sceneSetDelivered, sceneKickoff, sceneReset } = m);
-  } else {
-    const m = await import("./scene");
-    m.initScene(document.getElementById("scene") as HTMLCanvasElement, cfg.corridors);
-    ({ sceneCorridorUpdate, sceneSetDelivered, sceneKickoff, sceneReset } = m);
+    try {
+      const m = await import("./scene3dmaps");
+      await m.initScene(cfg.corridors, cfg.maps_api_key);
+      (document.getElementById("scene") as HTMLCanvasElement).style.display = "none";
+      ({ sceneCorridorUpdate, sceneSetDelivered, sceneKickoff, sceneReset } = m);
+      return;
+    } catch (e) {
+      // The maps3d alpha channel changes under us — never let the scene
+      // take the control panel down with it.
+      console.error("3D Maps scene failed, using stylized fallback:", e);
+      document.getElementById("map3d")!.replaceChildren();
+    }
   }
+  const m = await import("./scene");
+  m.initScene(document.getElementById("scene") as HTMLCanvasElement, cfg.corridors);
+  ({ sceneCorridorUpdate, sceneSetDelivered, sceneKickoff, sceneReset } = m);
 }
 
 async function boot() {
+  // Wire the launch button before anything that can fail — the demo must
+  // always be launchable even if the scene or state restore breaks.
+  document.getElementById("launch-btn")!.addEventListener("click", launch);
+
   const cfg = await (await fetch("/api/config")).json();
   fansTotal = cfg.fans_total;
   document.getElementById("fans-total")!.textContent = fansTotal.toLocaleString("en-US");
@@ -66,14 +77,12 @@ async function boot() {
     document.getElementById("launch-wrap")!.classList.add("hidden");
     state.corridors?.forEach((c: any) => {
       updateCorridorCard(c);
-      sceneCorridorUpdate(c);
+      sceneCorridorUpdate?.(c);
     });
     if (state.last_tick) updateTick(state.last_tick);
     state.decisions?.slice().reverse().forEach((d: any) => addDecision(d, corridorColors));
     connectStream();
   }
-
-  document.getElementById("launch-btn")!.addEventListener("click", launch);
 }
 
 async function launch() {
@@ -84,7 +93,7 @@ async function launch() {
     const res = await fetch("/api/launch", { method: "POST" });
     const body = await res.json();
     runId = body.run_id;
-    sceneReset();
+    sceneReset?.();
     kickoffShown = false;
     connectStream();
     setTimeout(() => {
@@ -116,15 +125,15 @@ function handleChange(event: any) {
   switch (event.collection) {
     case "corridor_state":
       updateCorridorCard(doc);
-      sceneCorridorUpdate(doc);
+      sceneCorridorUpdate?.(doc);
       break;
 
     case "ticks":
       updateTick(doc);
-      sceneSetDelivered((doc.delivered_total ?? 0) / fansTotal);
+      sceneSetDelivered?.((doc.delivered_total ?? 0) / fansTotal);
       if (doc.phase === "kickoff" && !kickoffShown) {
         kickoffShown = true;
-        sceneKickoff();
+        sceneKickoff?.();
         banner("⚽ KICKOFF — MATCH UNDERWAY", "success");
       }
       break;
