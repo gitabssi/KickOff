@@ -91,7 +91,7 @@ class AgentDispatcher:
         if config.AUTOPILOT:
             self._apply_decision(agent, self._autopilot_concierge(corridor_id, snapshot, trigger))
             return
-        message = json.dumps({"trigger": trigger, **snapshot})
+        message = json.dumps({"trigger": trigger, **snapshot}, default=str)
         async with _semaphore:
             text = await dispatch(agent, message)
         self._apply_decision(agent, extract_json(text))
@@ -100,7 +100,7 @@ class AgentDispatcher:
         if config.AUTOPILOT:
             decision = self._autopilot_coordinator(payload)
         else:
-            message = json.dumps({"action": "surge_escalation", **payload})
+            message = json.dumps({"action": "surge_escalation", **payload}, default=str)
             async with _semaphore:
                 text = await dispatch("coordinator", message)
             decision = extract_json(text)
@@ -131,7 +131,7 @@ class AgentDispatcher:
                 }
             )
             return
-        message = json.dumps({"action": "post_match", "run_id": self.engine.run_id, **payload})
+        message = json.dumps({"action": "post_match", "run_id": self.engine.run_id, **payload}, default=str)
         async with _semaphore:
             text = await dispatch("coordinator", message)
         decision = extract_json(text)
