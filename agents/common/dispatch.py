@@ -120,7 +120,7 @@ async def _dispatch_cloud(name: str, message: str) -> str:
     return final_text
 
 
-async def dispatch(name: str, message: str, retries: int = 2) -> str:
+async def dispatch(name: str, message: str, retries: int = 4) -> str:
     """Send a message to an agent and return its final text response."""
     last_error: Exception | None = None
     for attempt in range(retries + 1):
@@ -131,7 +131,13 @@ async def dispatch(name: str, message: str, retries: int = 2) -> str:
         except Exception as e:  # noqa: BLE001 — surface after retries
             last_error = e
             logger.warning("dispatch %s attempt %d failed: %s", name, attempt + 1, e)
-            await asyncio.sleep(1.5 * (attempt + 1))
+            # Gemini 3 preview quota is a per-minute RPM cap shared across all
+            # agents — a short backoff just re-hits the same window, so wait
+            # long enough for it to reset before retrying.
+            if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+                await asyncio.sleep(min(15 * (attempt + 1), 60))
+            else:
+                await asyncio.sleep(1.5 * (attempt + 1))
     raise RuntimeError(f"dispatch to {name} failed after {retries + 1} attempts") from last_error
 
 
