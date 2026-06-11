@@ -113,6 +113,19 @@ docs/            demo-script.md, architecture.md
 - Engine telemetry (per-tick state) goes through the driver; *agent reasoning* goes through MCP. High-frequency telemetry through an LLM tool-call loop would add latency and nothing else.
 - The hosted MCP server is deployed `--allow-unauthenticated` for demo simplicity (the connection string stays server-side). Lock it with Cloud Run IAM for anything real.
 
+## Built on agent-starter-pack
+
+This project was enhanced with [`agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) (v0.41.3, `adk` base template, Agent Engine target):
+
+| Command | What it does |
+|---|---|
+| `make playground` | ADK web playground — chat with the coordinator agent locally |
+| `make deploy` | Starter-pack deploy of the root agent (coordinator) to Agent Engine |
+| `make eval` | ADK agent evaluation harness |
+| `make register-gemini-enterprise` | Register the deployed agent to Gemini Enterprise |
+
+`agents/agent.py` is the starter-pack entry point (root agent = the Matchday Coordinator); `agents/agent_engine_app.py` wires Cloud Trace/Logging telemetry and a feedback operation. The full multi-agent fleet deploys with `make deploy-agents`.
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).

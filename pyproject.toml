@@ -4,10 +4,17 @@ version = "0.1.0"
 description = "KickOff Agent — multi-agent World Cup 2026 fan logistics simulation for MetLife Stadium"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-requires-python = ">=3.12"
+authors = [{ name = "KickOff Agent contributors" }]
+requires-python = ">=3.12,<3.14"
 dependencies = [
-    "google-adk>=1.31.0",
-    "google-cloud-aiplatform[agent_engines]>=1.112.0",
+    # agent-starter-pack baseline
+    "google-adk>=1.15.0,<2.0.0",
+    "opentelemetry-instrumentation-google-genai>=0.1.0,<1.0.0",
+    "gcsfs>=2024.11.0",
+    "google-cloud-logging>=3.12.0,<4.0.0",
+    "google-cloud-aiplatform[evaluation,agent-engines]>=1.130.0",
+    "protobuf>=6.31.1,<7.0.0",
+    # kickoff
     "google-genai>=1.70.0",
     "a2a-sdk>=0.3.0,<0.4.0",
     "pymongo>=4.10.0",
@@ -17,22 +24,40 @@ dependencies = [
     "uvicorn[standard]>=0.34.0",
     "httpx>=0.27.0",
     "sse-starlette>=2.1.0",
-    "mcp>=1.27.2",
+    "mcp>=1.5.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.25.0",
-    "ruff>=0.8.0",
+    "pytest>=8.3.4,<9.0.0",
+    "pytest-asyncio>=0.23.8,<1.0.0",
+    "nest-asyncio>=1.6.0,<2.0.0",
 ]
+
+[project.optional-dependencies]
+jupyter = ["jupyter>=1.0.0,<2.0.0"]
+eval = ["google-adk[eval]>=1.15.0,<2.0.0"]
+lint = ["ruff>=0.4.6,<1.0.0", "ty>=0.0.1a0", "codespell>=2.2.0,<3.0.0"]
 
 [tool.ruff]
 line-length = 120
 target-version = "py312"
 
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "C", "B", "UP", "RUF"]
+ignore = ["E501", "C901", "B006"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agents", "gateway"]
+
+[tool.codespell]
+ignore-words-list = "rouge"
+skip = "./locust_env/*,uv.lock,.venv,**/*.ipynb,web/*,**/package-lock.json"
+
 [tool.pytest.ini_options]
+pythonpath = "."
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
@@ -41,3 +66,19 @@ packages = ["agents", "gateway"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.agent-starter-pack]
+# Generation metadata - enables CLI commands to understand project context
+name = "kickoff"
+description = "Multi-agent World Cup 2026 fan logistics simulation"
+base_template = "adk"
+agent_directory = "agents"
+generated_at = "2026-06-11T14:11:00.812787+00:00"
+asp_version = "0.41.3"
+
+[tool.agent-starter-pack.create_params]
+deployment_target = "agent_engine"
+session_type = "none"
+cicd_runner = "skip"
+include_data_ingestion = false
+datastore = "none"
